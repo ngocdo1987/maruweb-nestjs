@@ -1,10 +1,13 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, HttpAdapterHost, Reflector } from '@nestjs/core';
+import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
 import {
   FastifyAdapter,
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
+import { fastifyHelmet } from 'fastify-helmet';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { PrismaClientExceptionFilter } from './prisma-client-exception.filter';
 
 async function bootstrap() {
   // Use Fastify instead of Express
@@ -12,6 +15,16 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter()
   );
+
+  // binds ValidationPipe to the entire application
+  app.useGlobalPipes(new ValidationPipe());
+
+  // apply transform to all responses
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+
+	// 👇 apply PrismaClientExceptionFilter to entire application, requires HttpAdapterHost because it extends BaseExceptionFilter
+  const { httpAdapter } = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new PrismaClientExceptionFilter(httpAdapter));
 
   // Use Swagger for API
   const config = new DocumentBuilder()
@@ -22,6 +35,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('apiDocs', app, document);
 
+  await app.register(fastifyHelmet);
   await app.listen(3001);
 }
 bootstrap();
