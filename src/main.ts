@@ -33,8 +33,9 @@ async function bootstrap() {
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('apiDocs', app, document);
+  SwaggerModule.setup('api', app, document);
 
+  // Fix helmet => showing API docs
   await app.register(fastifyHelmet, {
     contentSecurityPolicy: {
       directives: {
@@ -45,6 +46,7 @@ async function bootstrap() {
       },
     },
   });
+
   await app.listen(3001);
 }
 bootstrap();
