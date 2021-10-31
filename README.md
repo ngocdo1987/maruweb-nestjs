@@ -38,7 +38,7 @@ $ npm run test:cov
 - [Deploy NestJS to Nginx (full)](deploy-nestjs-to-nginx-full.md)
 - [Deploy NestJS on Apache](deploy-nestjs-to-apache.md)
 
-## How to user Prisma
+## How to use Prisma
 - Write database structure in prisma/schema.prisma
 - Create first migration 
 ```bash
